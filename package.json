@@ -1,0 +1,52 @@
+{
+    "version": "1.0.0",
+    "license": "MIT",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "homepage": "https://github.com/cseitz/envzo",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "engines": {
+        "node": ">=10"
+    },
+    "scripts": {
+        "dev": "tsdx watch",
+        "build": "tsdx build",
+        "test": "tsdx test",
+        "lint": "tsdx lint",
+        "prepare": "tsdx build",
+        "release": "np"
+    },
+    "peerDependencies": {},
+    "husky": {
+        "hooks": {
+            "pre-commit": "tsdx lint --fix && git add ."
+        }
+    },
+    "prettier": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": true,
+        "trailingComma": "all"
+    },
+    "name": "envzo",
+    "author": "cseitz",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/cseitz/envso.git"
+    },
+    "module": "dist/envsafe.esm.js",
+    "devDependencies": {
+        "husky": "4.3.8",
+        "np": "*",
+        "tsdx": "0.14.1",
+        "tslib": "2.4.1",
+        "typescript": "4.9.3"
+    },
+    "dependencies": {
+        "dotenv": "^16.0.3",
+        "zod": "^3.19.1"
+    }
+}
