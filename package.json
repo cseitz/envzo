@@ -37,16 +37,12 @@
         "type": "git",
         "url": "https://github.com/cseitz/envso.git"
     },
-    "module": "dist/envsafe.esm.js",
+    "module": "dist/envzo.esm.js",
     "devDependencies": {
         "husky": "4.3.8",
         "np": "*",
         "tsdx": "0.14.1",
         "tslib": "2.4.1",
         "typescript": "4.9.3"
-    },
-    "dependencies": {
-        "dotenv": "^16.0.3",
-        "zod": "^3.19.1"
     }
 }
