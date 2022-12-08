@@ -116,6 +116,7 @@ export function makeValidator<T, O extends object = EmptyObject>(
 
 export namespace validators {
 
+    /** Matches a boolean */
     export const boolean = makeValidator<boolean>(({ input }) => {
         switch (input) {
             case true:
@@ -133,6 +134,7 @@ export namespace validators {
         }
     });
 
+    /** Matches a string */
     export const string = makeValidator<string>(({ input }) => {
         if (typeof input !== 'string') {
             throw errors.invalid('string', input);
@@ -141,6 +143,7 @@ export namespace validators {
     });
 
     const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/; // intentionally non-exhaustive
+    /** Matches an email */
     export const email = makeValidator<string>(({ input }) => {
         if (!EMAIL_REGEX.test(input)) {
             throw errors.invalid('email', input);
@@ -148,6 +151,7 @@ export namespace validators {
         return input;
     });
 
+    /** Matches a number */
     export const number = makeValidator<number>(({ input }) => {
         const coerced = +input;
         if (Number.isNaN(coerced)) {
@@ -156,6 +160,7 @@ export namespace validators {
         return coerced;
     });
 
+    /** Matches a port number */
     export const port = makeValidator<number>(({ input }) => {
         const coerced = +input;
         if (
@@ -170,6 +175,7 @@ export namespace validators {
         return coerced;
     });
 
+    /** Matches a URL */
     export const url = makeValidator<string>(({ input }) => {
         try {
             new URL(input); // validate url
@@ -179,6 +185,7 @@ export namespace validators {
         }
     });
 
+    /** Matches JSON */
     export const json = makeValidator<unknown>(({ input }) => {
         try {
             if (typeof input !== 'string') {
@@ -190,6 +197,15 @@ export namespace validators {
             throw errors.invalid('json', input);
         }
     });
+
+    const HOST_REGEX = /(([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})|(\w*.\w*.\w*)):[0-9]{2,5}/;
+    /** Matches `host:port` */
+    export const host = makeValidator<string>(({ input, errors }) => {
+        if (!HOST_REGEX.test(input)) {
+            throw errors.invalid('host', input);
+        }
+        return input;
+    })
 
 }
 

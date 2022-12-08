@@ -33,6 +33,15 @@ const env = envzo.parse(process.env, ({ port }) => ({
 console.log(env.listenPort);
 ```
 
+String templating can be used.
+```ts
+import {envzo } from 'envzo';
+
+const env = envzo.parse(process.env, ({ host, string }) => ({
+    mongo: `mongodb://${host({ key: 'MONGO_HOST' })}/${string({ key: 'MONGO_DB' })}`
+}))
+```
+
 You can also define custom validators.
 ```ts
 import { Envzo } from 'envzo';

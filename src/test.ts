@@ -17,10 +17,10 @@ export const envzo = new Envzo({
 });
 
 
-envzo.parse(process.env, ({ string, powerOfTwo }) => ({
+envzo.parse(process.env, ({ powerOfTwo }) => ({
     // a: `mongodb://${string({ key: 'aMONGO_HOST' })}/${string({ key: 'aMONGO_DB' })}&${string({ key: 'aMONGO_AND' })}`,
     ye: powerOfTwo({ key: 'YE', default: 4 }),
-    mongo: `mongodb://${string({ key: 'MONGO_HOST' })}/${string({ key: 'MONGO_DB' })}`,
+    // mongo: `mongodb://${string({ key: 'MONGO_HOST' })}/${string({ key: 'MONGO_DB' })}`,
     // nums: [number({ key: 'N1' }), number({ key: 'N2' })],
     // eey: number({ key: 'EEY' }),
     // omg: string({ get: env => env.omg }),
@@ -30,4 +30,8 @@ envzo.parse(process.env, ({ string, powerOfTwo }) => ({
     //     x: `mongodb://${string({ key: 'xMONGO_DB' })}&${string({ key: 'xMONGO_AND' })}`,
     // },
     // z: `mongodb://${string({ key: 'zMONGO_HOST' })}}`,
+}))
+
+envzo.parse(process.env, ({ host, string }) => ({
+    mongo: `mongodb://${host({ key: 'MONGO_HOST' })}/${string({ key: 'MONGO_DB' })}`
 }))
