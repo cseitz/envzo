@@ -1,9 +1,10 @@
 import { errors } from './errors';
+import { Counter } from './utils';
 
 
 type EmptyObject = {}
 
-type EnvzoValidatorOptions<T, E = any> = {
+export type EnvzoValidatorOptions<T, E = any> = {
     /** Default value*/
     default?: T;
     /** If false *(default)*, the process will exit if this value is missing */
@@ -33,7 +34,8 @@ export { internals }
 
 // export type EnvzoValidator<T, O extends object = EmptyObject> = (options: O & EnvzoValidatorOptions<T>) => T;
 export type EnvzoValidator<T, O extends object = EmptyObject, E extends object = any> = ((input: string | T, options?: O & EnvzoValidatorOptions<T>) => T) & {
-    with: (env: E) => (options: O & EnvzoValidatorOptions<T, E>) => T
+    serialize: (counter: Counter, arr?: any[], stopAt?: number, asString?: boolean) => (options: O & EnvzoValidatorOptions<T, E>) => O & EnvzoValidatorOptions<T, E> & { index: number };
+    with: (env: E) => (options: O & EnvzoValidatorOptions<T, E>) => T;
     [internals]: {
         T: T
         O: O
@@ -41,30 +43,42 @@ export type EnvzoValidator<T, O extends object = EmptyObject, E extends object =
 };
 
 
+let _validators: typeof validators;
+
+export const MATCH_SERIALIZED_VALIDATOR = /<\[\[VALIDATOR:(\d+)\]\]>/g;
 export function makeValidator<T, O extends object = EmptyObject>(
     parser: EnvzoParser<T, O>,
     defaultOptions?: O
 ): EnvzoValidator<T, O> {
-    const bind = function(this: any, options: any) {
+    const bind = function (options: EnvzoValidatorOptions<any>) {
         let input;
         if ('key' in options) {
+            // @ts-ignore
             input = this[options.key];
         } else if ('get' in options) {
+            // @ts-ignore
             input = options.get(this);
         }
-        // @ts-ignore
+        if (input === undefined) {
+            if (options.optional) {
+                return undefined;
+            } else {
+                throw errors.missing()
+            }
+        }
         return parser({
+            parse: _validators,
             input: input as any,
             errors,
             options: {
                 ...(defaultOptions || {}),
                 ...(options || {})
-            }
+            } as any,
         })
     }
-    return Object.assign(function(input: any, options: any = {}) {
-        // @ts-ignore
+    return Object.assign(function (input: any, options: any = {}) {
         return parser({
+            parse: _validators,
             input,
             errors,
             options: {
@@ -73,7 +87,29 @@ export function makeValidator<T, O extends object = EmptyObject>(
             }
         })
     }, {
+        __bind: bind,
         with: (env: any) => bind.bind(env),
+        serialize: (counter: Counter, arr?: any[], stopAt?: number, asString?: boolean) => {
+            return function (opts: any) {
+                const n = counter.increment() - 1;
+                if (stopAt != undefined && n >= stopAt) {
+                    throw new Error(`Serialize STOP`);
+                }
+                const result = {
+                    ...opts,
+                    index: n,
+                    bind,
+                    toString() {
+                        return `<[[VALIDATOR:${result.index}]]>`
+                    }
+                }
+                if (arr) arr.push(result);
+                if (asString === true) {
+                    return result.toString();
+                }
+                return result;
+            }
+        },
     } as any)
 }
 
@@ -156,3 +192,5 @@ export namespace validators {
     });
 
 }
+
+_validators = validators;

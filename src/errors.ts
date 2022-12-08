@@ -1,4 +1,7 @@
 
+export type EnvzoValidatorError =
+    | InvalidEnvironmentError
+    | MissingEnvironmentError
 
 export class InvalidEnvironmentError extends TypeError {
     constructor(message?: string) {
@@ -21,9 +24,9 @@ export const errors = {
      * @param type  The name of this validator
      * @param input The value given at runtime
      */
-    invalid: (type: string, input: unknown) => (
-        new InvalidEnvironmentError(`Invalid ${type}; input: "${input}"`)
-    ),
+    invalid: (type: string, input: unknown) => {
+        return new InvalidEnvironmentError(`Invalid ${type} input: "${input}"`)
+    },
     /** Environment variable does not exist */
     missing: (message?: string) => (
         new MissingEnvironmentError(message)
