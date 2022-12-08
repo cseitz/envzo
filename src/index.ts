@@ -1,4 +1,4 @@
-import { EnvzoValidator, makeValidator, validators } from './validators';
+import { EnvzoValidator, makeValidator, validators, internals } from './validators';
 
 
 
@@ -10,9 +10,14 @@ type EnvzoConfig = {
 
 // type InferEnvzo<T> = T extends EnvzoParser<any> ? ReturnType<T> : T;
 
-type BoundEnvzoValidators<C extends EnvzoConfig, V = typeof validators & C['validators']> = {
+// type BoundEnvzoValidators<C extends EnvzoConfig, E = any, V = typeof validators & C['validators']> = {
+//     // @ts-ignore
+//     [P in keyof V]: (...args: Parameters<V[P]['with']>) => ReturnType<V[P]>;
+// }
+
+type BoundEnvzoValidators<C extends EnvzoConfig, E = any, V = typeof validators & C['validators']> = {
     // @ts-ignore
-    [P in keyof V]: (...args: Parameters<V[P]>) => ReturnType<V[P]>;
+    [P in keyof V]: ReturnType<EnvzoValidator<V[P][typeof internals]['T'], V[P][typeof internals]['O'], E>['with']>
 }
 
 export class Envzo<C extends EnvzoConfig> {
@@ -23,7 +28,7 @@ export class Envzo<C extends EnvzoConfig> {
     }
 
 
-    parse<T>(env: any, register: (types: BoundEnvzoValidators<C>) => T) {
+    parse<E, T>(env: E, register: (types: BoundEnvzoValidators<C, E>) => T) {
         const boundValidators = Object.fromEntries(
             Object.entries({
                 ...validators,
@@ -35,19 +40,20 @@ export class Envzo<C extends EnvzoConfig> {
         return register(boundValidators as any);
     }
 
-
 }
 
-export const envzo = new Envzo({
-    validators: {
-        bruh: Envzo.makeValidator<boolean>(({ }) => {
-            return true;
-        })
-    }
-});
+
+// export const envzo = new Envzo({
+//     validators: {
+//         bruh: Envzo.makeValidator<boolean>(({ parse }) => {
+//             return true;
+//         })
+//     }
+// });
 
 
-// envzo.parse({}, ({ number, string, bruh }) => ({
+
+// envzo.parse(process.env, ({ number, string, bruh }) => ({
 //     ye: bruh({ key: 'YE', default: false }),
 //     mongo: `mongodb://${string({ key: 'MONGO_HOST' })}/${string({ key: 'MONGO_DB' })}`,
 //     eey: number({ key: 'EEY' }),

@@ -22,7 +22,7 @@ export const errors = {
      * @param input The value given at runtime
      */
     invalid: (type: string, input: unknown) => (
-        new InvalidEnvironmentError(`Invalid ${type} input: "${input}"`)
+        new InvalidEnvironmentError(`Invalid ${type}; input: "${input}"`)
     ),
     /** Environment variable does not exist */
     missing: (message?: string) => (

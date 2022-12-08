@@ -3,7 +3,7 @@ import { errors } from './errors';
 
 type EmptyObject = {}
 
-type EnvzoValidatorOptions<T> = {
+type EnvzoValidatorOptions<T, E = any> = {
     /** Default value*/
     default?: T;
     /** If false *(default)*, the process will exit if this value is missing */
@@ -13,7 +13,7 @@ type EnvzoValidatorOptions<T> = {
     key: string;
 } | {
     /** A getter to retrieve the value from the `env` dictionary */
-    get: (env: any) => any | null;
+    get: (env: E) => any | null;
 })
 
 export type EnvzoParser<T, O extends object = EmptyObject> = (props: {
@@ -22,23 +22,37 @@ export type EnvzoParser<T, O extends object = EmptyObject> = (props: {
     /** Configuration passed in `envzo.parse` */
     options: O & EnvzoValidatorOptions<T>,
     /** Envzo errors such as `invalid` to indicate the validator failing */
-    errors: typeof errors
+    errors: typeof errors,
+    /** Built-in validators for parsing basic datatypes */
+    parse: typeof validators,
 }) => T;
 
-export type EnvzoValidator<T, O extends object = EmptyObject> = (options: O & EnvzoValidatorOptions<T>) => T;
+// declare const internals: unique symbol;
+const internals: unique symbol = Symbol();
+export { internals }
+
+// export type EnvzoValidator<T, O extends object = EmptyObject> = (options: O & EnvzoValidatorOptions<T>) => T;
+export type EnvzoValidator<T, O extends object = EmptyObject, E extends object = any> = ((input: string | T, options?: O & EnvzoValidatorOptions<T>) => T) & {
+    with: (env: E) => (options: O & EnvzoValidatorOptions<T, E>) => T
+    [internals]: {
+        T: T
+        O: O
+    }
+};
 
 
 export function makeValidator<T, O extends object = EmptyObject>(
     parser: EnvzoParser<T, O>,
     defaultOptions?: O
 ): EnvzoValidator<T, O> {
-    return function(this: any, options) {
+    const bind = function(this: any, options: any) {
         let input;
         if ('key' in options) {
             input = this[options.key];
         } else if ('get' in options) {
             input = options.get(this);
         }
+        // @ts-ignore
         return parser({
             input: input as any,
             errors,
@@ -47,17 +61,20 @@ export function makeValidator<T, O extends object = EmptyObject>(
                 ...(options || {})
             }
         })
-        // return (input) => {
-        //     return parser({
-        //         input: input as any,
-        //         errors,
-        //         options: {
-        //             ...(defaultOptions || {}),
-        //             ...(options || {})
-        //         }
-        //     })
-        // }
     }
+    return Object.assign(function(input: any, options: any = {}) {
+        // @ts-ignore
+        return parser({
+            input,
+            errors,
+            options: {
+                ...(defaultOptions || {}),
+                ...(options || {})
+            }
+        })
+    }, {
+        with: (env: any) => bind.bind(env),
+    } as any)
 }
 
 
@@ -137,7 +154,5 @@ export namespace validators {
             throw errors.invalid('json', input);
         }
     });
-
-    boolean({ key: 'omg' })
 
 }
