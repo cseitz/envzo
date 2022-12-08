@@ -37,8 +37,8 @@ String templating can be used.
 ```ts
 import {envzo } from 'envzo';
 
-const env = envzo.parse(process.env, ({ host, string }) => ({
-    mongo: `mongodb://${host({ key: 'MONGO_HOST' })}/${string({ key: 'MONGO_DB' })}`
+const env = envzo.parse(process.env, v => ({
+    mongo: `mongodb://${v.host({ key: 'MONGO_HOST' })}/${v.string({ key: 'MONGO_DB' })}`
 }))
 ```
 
@@ -60,8 +60,8 @@ export const envzo = new Envzo({
     }
 });
 
-const env = envzo.parse(process.env, ({ powerOfTwo }) => ({
-    num: powerOfTwo({ key: 'NUMBER' })
+const env = envzo.parse(process.env, v => ({
+    num: v.powerOfTwo({ key: 'NUMBER' })
 }))
 
 // num is a power of two
