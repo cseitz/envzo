@@ -35,7 +35,7 @@ console.log(env.listenPort);
 
 String templating can be used.
 ```ts
-import {envzo } from 'envzo';
+import { envzo } from 'envzo';
 
 const env = envzo.parse(process.env, v => ({
     mongo: `mongodb://${v.host({ key: 'MONGO_HOST' })}/${v.string({ key: 'MONGO_DB' })}`
